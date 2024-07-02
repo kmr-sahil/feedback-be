@@ -28,7 +28,7 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             data: { name, email, password: hashedPassword },
         });
         const token = jsonwebtoken_1.default.sign({ userId: user.userId }, SECRET_KEY, {
-            expiresIn: "1h",
+            expiresIn: "24h",
         });
         res.cookie("token", token, { httpOnly: true });
         res.status(201).json({ message: "User created", token });
