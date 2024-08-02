@@ -12,37 +12,55 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getResponse = exports.postResponse = void 0;
+exports.getResponse = exports.postResponse = exports.createProject = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
+const uuid_1 = require("uuid");
 dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 const SECRET_KEY = process.env.SECRET_KEY;
-const postResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId, type, content, star } = req.body;
+// Endpoint to create a new project
+const createProject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { name, description } = req.body;
     try {
+        const userId = req.body;
+        console.log(userId);
         const checkUser = yield prisma.user.findUnique({
             where: {
                 userId: userId,
             },
         });
         if (!checkUser) {
-            res.status(403).json({ error: "Invalid user id" });
+            return res.status(403).json({ error: "Invalid user id" });
+        }
+        const projectId = (0, uuid_1.v4)();
+        const projectData = yield prisma.project.create({
+            data: { projectId, userId, name, description },
+        });
+        res
+            .status(201)
+            .json({ message: "Project created successfully", projectData });
+    }
+    catch (error) {
+        console.error("Error creating project:", error);
+        res.status(500).json({ error: "Failed to create project" });
+    }
+});
+exports.createProject = createProject;
+// Endpoint to create a new response
+const postResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { projectId, type, content, star } = req.body;
+    try {
+        const checkProject = yield prisma.project.findUnique({
+            where: {
+                projectId: projectId,
+            },
+        });
+        if (!checkProject) {
+            return res.status(403).json({ error: "Invalid project id" });
         }
         const responseData = yield prisma.response.create({
-            data: { userId, type, content, star },
-        });
-        const addResponsetoUserTable = yield prisma.user.update({
-            where: {
-                userId: userId,
-            },
-            data: {
-                responses: {
-                    // Append the newly created response to the existing responses array
-                    // Use 'connect' to establish a relationship between user and response
-                    connect: { responseId: responseData.responseId },
-                },
-            },
+            data: { projectId, type, content, star },
         });
         res
             .status(201)
@@ -54,16 +72,16 @@ const postResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.postResponse = postResponse;
+// Endpoint to get responses for a project
 const getResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.userId;
-    console.log(userId);
+    const { projectId } = req.params;
     try {
-        if (!userId) {
-            return res.status(401).json({ error: "Unauthorized" });
+        if (!projectId) {
+            return res.status(400).json({ error: "Project ID is required" });
         }
         const responses = yield prisma.response.findMany({
             where: {
-                userId: userId,
+                projectId: projectId,
             },
         });
         res.status(200).json({ responses });

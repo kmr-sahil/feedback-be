@@ -4,7 +4,11 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { signup, signin } from "./auth/auth";
 import { verifyUserWithToken } from "./auth/middleware";
-import { postResponse, getResponse } from "./operations/operations";
+import {
+  postResponse,
+  getResponse,
+  createProject,
+} from "./operations/operations";
 
 dotenv.config(); // Load environment variables
 
@@ -27,6 +31,7 @@ app.use("/v1/verifyuserwithtoken", verifyUserWithToken, (req, res) => {
   res.send("User is verified");
 });
 
+app.post("/v1/create-project", verifyUserWithToken, createProject);
 app.post("/v1/responses", postResponse);
 app.get("/v1/responses", verifyUserWithToken, getResponse);
 

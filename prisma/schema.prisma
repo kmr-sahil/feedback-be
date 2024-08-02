@@ -8,21 +8,33 @@ generator client {
 }
 
 model User {
-  userId    Int       @id @default(autoincrement())
-  name      String
-  email     String    @unique
-  password  String
-  responses Response[]
+  userId   String   @id @unique
+  name     String
+  email    String   @unique
+  password String
+  projects Project[]
+}
+
+model Project {
+  projectId   String     @id @unique
+  userId      String
+  name        String
+  description String?
+  responses   Response[]
+
+  user User @relation(fields: [userId], references: [userId])
+
+  @@index([userId])
 }
 
 model Response {
   responseId Int    @id @default(autoincrement())
-  userId     Int
+  projectId  String
   type       String
   content    String
   star       Int
 
-  user       User    @relation(fields: [userId], references: [userId])
+  project Project @relation(fields: [projectId], references: [projectId])
 
-  @@index([userId])
+  @@index([projectId])
 }

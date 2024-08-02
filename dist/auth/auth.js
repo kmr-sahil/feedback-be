@@ -17,15 +17,17 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
+const uuid_1 = require("uuid");
 dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 const SECRET_KEY = process.env.SECRET_KEY;
 const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, email, password } = req.body;
     try {
+        const userId = (0, uuid_1.v4)();
         const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
         const user = yield prisma.user.create({
-            data: { name, email, password: hashedPassword },
+            data: { userId: userId, name, email, password: hashedPassword },
         });
         const token = jsonwebtoken_1.default.sign({ userId: user.userId }, SECRET_KEY, {
             expiresIn: "24h",

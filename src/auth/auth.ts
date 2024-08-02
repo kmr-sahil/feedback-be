@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
+import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
 
@@ -13,9 +14,10 @@ export const signup = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
 
   try {
+    const userId = uuidv4();
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { name, email, password: hashedPassword },
+      data: { userId: userId, name, email, password: hashedPassword },
     });
 
     const token = jwt.sign({ userId: user.userId }, SECRET_KEY, {
