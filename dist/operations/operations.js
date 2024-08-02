@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getResponse = exports.postResponse = exports.createProject = void 0;
+exports.getResponse = exports.postResponse = exports.getProjects = exports.createProject = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 const uuid_1 = require("uuid");
@@ -47,6 +47,23 @@ const createProject = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.createProject = createProject;
+const getProjects = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.body;
+        console.log(userId);
+        const projectIds = yield prisma.project.findMany({
+            where: {
+                userId: userId,
+            },
+        });
+        return projectIds;
+    }
+    catch (error) {
+        console.error("Error fetching project:", error);
+        res.status(500).json({ error: "Failed to fetch project" });
+    }
+});
+exports.getProjects = getProjects;
 // Endpoint to create a new response
 const postResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { projectId, type, content, star } = req.body;
