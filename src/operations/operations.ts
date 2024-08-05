@@ -11,15 +11,19 @@ const SECRET_KEY = process.env.SECRET_KEY as string;
 // Endpoint to create a new project
 export const createProject = async (req: Request, res: Response) => {
   const { name, description } = req.body;
+  const userId = req.userId; // Assuming you're setting this in your auth middleware
+
+  if (!userId) {
+    return res.status(403).json({ error: "User not authenticated" });
+  }
 
   try {
-    const userId = req.body;
-    console.log(userId);
     const checkUser = await prisma.user.findUnique({
       where: {
         userId: userId,
       },
     });
+
     if (!checkUser) {
       return res.status(403).json({ error: "Invalid user id" });
     }
@@ -40,18 +44,21 @@ export const createProject = async (req: Request, res: Response) => {
 
 export const getProjects = async (req: Request, res: Response) => {
   try {
-    const userId = req.body;
-    console.log(userId);
-    const projectIds = await prisma.project.findMany({
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(403).json({ error: "User not authenticated" });
+    }
+
+    const projects = await prisma.project.findMany({
       where: {
         userId: userId,
       },
     });
 
-    return projectIds;
+    res.status(200).json({ projects });
   } catch (error) {
-    console.error("Error fetching project:", error);
-    res.status(500).json({ error: "Failed to fetch project" });
+    console.error("Error fetching projects:", error);
+    res.status(500).json({ error: "Failed to fetch projects" });
   }
 };
 

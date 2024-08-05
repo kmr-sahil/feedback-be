@@ -22,9 +22,11 @@ const SECRET_KEY = process.env.SECRET_KEY;
 // Endpoint to create a new project
 const createProject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, description } = req.body;
+    const userId = req.userId; // Assuming you're setting this in your auth middleware
+    if (!userId) {
+        return res.status(403).json({ error: "User not authenticated" });
+    }
     try {
-        const userId = req.body;
-        console.log(userId);
         const checkUser = yield prisma.user.findUnique({
             where: {
                 userId: userId,
@@ -49,18 +51,20 @@ const createProject = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 exports.createProject = createProject;
 const getProjects = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const userId = req.body;
-        console.log(userId);
-        const projectIds = yield prisma.project.findMany({
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(403).json({ error: "User not authenticated" });
+        }
+        const projects = yield prisma.project.findMany({
             where: {
                 userId: userId,
             },
         });
-        return projectIds;
+        res.status(200).json({ projects });
     }
     catch (error) {
-        console.error("Error fetching project:", error);
-        res.status(500).json({ error: "Failed to fetch project" });
+        console.error("Error fetching projects:", error);
+        res.status(500).json({ error: "Failed to fetch projects" });
     }
 });
 exports.getProjects = getProjects;

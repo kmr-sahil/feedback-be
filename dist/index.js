@@ -24,7 +24,8 @@ app.post("/v1/auth/signin", auth_1.signin);
 app.use("/v1/verifyuserwithtoken", middleware_1.verifyUserWithToken, (req, res) => {
     res.send("User is verified");
 });
-app.post("/v1/create-project", middleware_1.verifyUserWithToken, operations_1.createProject);
+app.post("/v1/project", middleware_1.verifyUserWithToken, operations_1.createProject);
+app.get("/v1/project", middleware_1.verifyUserWithToken, operations_1.getProjects);
 app.post("/v1/responses", operations_1.postResponse);
 app.get("/v1/responses", middleware_1.verifyUserWithToken, operations_1.getResponse);
 app.listen(port, () => {

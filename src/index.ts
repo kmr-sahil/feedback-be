@@ -8,6 +8,7 @@ import {
   postResponse,
   getResponse,
   createProject,
+  getProjects,
 } from "./operations/operations";
 
 dotenv.config(); // Load environment variables
@@ -22,6 +23,7 @@ app.use(
     origin: "http://localhost:3000",
   })
 );
+
 app.use(cookieParser());
 
 app.post("/v1/auth/signup", signup);
@@ -31,7 +33,8 @@ app.use("/v1/verifyuserwithtoken", verifyUserWithToken, (req, res) => {
   res.send("User is verified");
 });
 
-app.post("/v1/create-project", verifyUserWithToken, createProject);
+app.post("/v1/project", verifyUserWithToken, createProject);
+app.get("/v1/project", verifyUserWithToken, getProjects);
 app.post("/v1/responses", postResponse);
 app.get("/v1/responses", verifyUserWithToken, getResponse);
 
