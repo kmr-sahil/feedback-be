@@ -90,9 +90,16 @@ export const postResponse = async (req: Request, res: Response) => {
 
 // Endpoint to get responses for a project
 export const getResponse = async (req: Request, res: Response) => {
-  const { projectId } = req.params;
+  const projectIdParam = req.query.projectId;
+  console.log(projectIdParam);
 
   try {
+    if (!projectIdParam || typeof projectIdParam !== "string") {
+      return res.status(400).json({ error: "Valid Project ID is required" });
+    }
+
+    const projectId = projectIdParam;
+
     if (!projectId) {
       return res.status(400).json({ error: "Project ID is required" });
     }
