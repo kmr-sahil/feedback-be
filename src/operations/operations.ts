@@ -91,7 +91,7 @@ export const postResponse = async (req: Request, res: Response) => {
 // Endpoint to get responses for a project
 export const getResponse = async (req: Request, res: Response) => {
   const projectIdParam = req.query.projectId;
-  console.log(projectIdParam);
+  //console.log(projectIdParam);
 
   try {
     if (!projectIdParam || typeof projectIdParam !== "string") {

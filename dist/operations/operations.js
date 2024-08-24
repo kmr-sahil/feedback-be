@@ -96,7 +96,7 @@ exports.postResponse = postResponse;
 // Endpoint to get responses for a project
 const getResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const projectIdParam = req.query.projectId;
-    console.log(projectIdParam);
+    //console.log(projectIdParam);
     try {
         if (!projectIdParam || typeof projectIdParam !== "string") {
             return res.status(400).json({ error: "Valid Project ID is required" });
