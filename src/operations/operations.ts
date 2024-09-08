@@ -42,6 +42,63 @@ export const createProject = async (req: Request, res: Response) => {
   }
 };
 
+export const getProject = async (req: Request, res: Response) => {
+  try {
+    const projectId = req.query.projectId as string;
+
+    // Ensure the project exists
+    const projectDetails = await prisma.project.findUnique({
+      where: {
+        projectId: projectId,
+      },
+    });
+
+    if (!projectDetails) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    res.status(200).json({ project: projectDetails });
+  } catch (error) {
+    console.error("Error retireving project:", error);
+    res.status(500).json({ error: "Failed to retrieve project" });
+  }
+};
+
+export const updateProjects = async (req: Request, res: Response) => {
+  try {
+    const { projectId, ...updateData } = req.body; // Destructure projectId and other fields to update
+    const userId = req.userId;
+
+    if (!userId) {
+      return res.status(403).json({ error: "User not authenticated" });
+    }
+
+    // Ensure the project exists
+    const existingProject = await prisma.project.findUnique({
+      where: {
+        projectId: projectId,
+      },
+    });
+
+    if (!existingProject) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Update the project with the data sent in the request
+    const updatedProject = await prisma.project.update({
+      where: {
+        projectId: projectId,
+      },
+      data: updateData, // This updates only the fields that are provided
+    });
+
+    res.status(200).json({ project: updatedProject });
+  } catch (error) {
+    console.error("Error updating project:", error);
+    res.status(500).json({ error: "Failed to update project" });
+  }
+};
+
 export const getProjects = async (req: Request, res: Response) => {
   try {
     const userId = req.userId;
@@ -64,7 +121,7 @@ export const getProjects = async (req: Request, res: Response) => {
 
 // Endpoint to create a new response
 export const postResponse = async (req: Request, res: Response) => {
-  const { projectId, type, content, star } = req.body;
+  const {name, email, projectId, type, content, star } = req.body;
 
   try {
     const checkProject = await prisma.project.findUnique({
@@ -76,7 +133,7 @@ export const postResponse = async (req: Request, res: Response) => {
       return res.status(403).json({ error: "Invalid project id" });
     }
     const responseData = await prisma.response.create({
-      data: { projectId, type, content, star },
+      data: {name, email, projectId, type, content, star },
     });
 
     res

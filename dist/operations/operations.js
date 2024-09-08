@@ -8,11 +8,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getResponse = exports.postResponse = exports.getProjects = exports.createProject = void 0;
+exports.getResponse = exports.postResponse = exports.getProjects = exports.updateProjects = exports.getProject = exports.createProject = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 const uuid_1 = require("uuid");
@@ -49,6 +60,57 @@ const createProject = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.createProject = createProject;
+const getProject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const projectId = req.query.projectId;
+        // Ensure the project exists
+        const projectDetails = yield prisma.project.findUnique({
+            where: {
+                projectId: projectId,
+            },
+        });
+        if (!projectDetails) {
+            return res.status(404).json({ error: "Project not found" });
+        }
+        res.status(200).json({ project: projectDetails });
+    }
+    catch (error) {
+        console.error("Error retireving project:", error);
+        res.status(500).json({ error: "Failed to retrieve project" });
+    }
+});
+exports.getProject = getProject;
+const updateProjects = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const _a = req.body, { projectId } = _a, updateData = __rest(_a, ["projectId"]); // Destructure projectId and other fields to update
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(403).json({ error: "User not authenticated" });
+        }
+        // Ensure the project exists
+        const existingProject = yield prisma.project.findUnique({
+            where: {
+                projectId: projectId,
+            },
+        });
+        if (!existingProject) {
+            return res.status(404).json({ error: "Project not found" });
+        }
+        // Update the project with the data sent in the request
+        const updatedProject = yield prisma.project.update({
+            where: {
+                projectId: projectId,
+            },
+            data: updateData, // This updates only the fields that are provided
+        });
+        res.status(200).json({ project: updatedProject });
+    }
+    catch (error) {
+        console.error("Error updating project:", error);
+        res.status(500).json({ error: "Failed to update project" });
+    }
+});
+exports.updateProjects = updateProjects;
 const getProjects = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.userId;
@@ -70,7 +132,7 @@ const getProjects = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.getProjects = getProjects;
 // Endpoint to create a new response
 const postResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { projectId, type, content, star } = req.body;
+    const { name, email, projectId, type, content, star } = req.body;
     try {
         const checkProject = yield prisma.project.findUnique({
             where: {
@@ -81,7 +143,7 @@ const postResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             return res.status(403).json({ error: "Invalid project id" });
         }
         const responseData = yield prisma.response.create({
-            data: { projectId, type, content, star },
+            data: { name, email, projectId, type, content, star },
         });
         res
             .status(201)

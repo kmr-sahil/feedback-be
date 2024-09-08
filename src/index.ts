@@ -9,6 +9,8 @@ import {
   getResponse,
   createProject,
   getProjects,
+  updateProjects,
+  getProject,
 } from "./operations/operations";
 
 dotenv.config(); // Load environment variables
@@ -34,7 +36,9 @@ app.use("/v1/verifyuserwithtoken", verifyUserWithToken, (req, res) => {
 });
 
 app.post("/v1/project", verifyUserWithToken, createProject);
-app.get("/v1/project", verifyUserWithToken, getProjects);
+app.get("/v1/project", getProject);
+app.put("/v1/project", verifyUserWithToken, updateProjects);
+app.get("/v1/projects", verifyUserWithToken, getProjects);
 app.post("/v1/responses", postResponse);
 app.get("/v1/responses", verifyUserWithToken, getResponse);
 

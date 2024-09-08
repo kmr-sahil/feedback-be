@@ -44,9 +44,7 @@ export const signin = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const token = jwt.sign({ userId: user.userId }, SECRET_KEY, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign({ userId: user.userId }, SECRET_KEY);
     res.cookie("token", token, { httpOnly: true });
     res.status(200).json({ message: "Signin successful", token });
   } catch (error) {
