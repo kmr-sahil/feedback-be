@@ -23,16 +23,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getResponse = exports.postResponse = exports.getProjects = exports.updateProjects = exports.getProject = exports.createProject = void 0;
+exports.s3Router = exports.getResponse = exports.postResponse = exports.getProjects = exports.updateProjects = exports.getProject = exports.createProject = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 const uuid_1 = require("uuid");
+const s3_1 = __importDefault(require("../utils/s3"));
 dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 const SECRET_KEY = process.env.SECRET_KEY;
 // Endpoint to create a new project
 const createProject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { name, description } = req.body;
+    const { logoUrl, name, description } = req.body;
     const userId = req.userId; // Assuming you're setting this in your auth middleware
     if (!userId) {
         return res.status(403).json({ error: "User not authenticated" });
@@ -48,7 +49,7 @@ const createProject = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         }
         const projectId = (0, uuid_1.v4)();
         const projectData = yield prisma.project.create({
-            data: { projectId, userId, name, description },
+            data: { projectId, userId, name, description, logoUrl },
         });
         res
             .status(201)
@@ -180,3 +181,22 @@ const getResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.getResponse = getResponse;
+const s3Router = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let { content_type } = req.body;
+        const key = (0, uuid_1.v4)();
+        const data = yield (0, s3_1.default)({ key, contentType: content_type });
+        return res.send({
+            status: "success",
+            data,
+        });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).send({
+            status: "error",
+            message: err.message,
+        });
+    }
+});
+exports.s3Router = s3Router;

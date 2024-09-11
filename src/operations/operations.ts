@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid";
+import createPresignedPost from "../utils/s3";
 
 dotenv.config();
 
@@ -10,7 +11,7 @@ const SECRET_KEY = process.env.SECRET_KEY as string;
 
 // Endpoint to create a new project
 export const createProject = async (req: Request, res: Response) => {
-  const { name, description } = req.body;
+  const { logoUrl, name, description } = req.body;
   const userId = req.userId; // Assuming you're setting this in your auth middleware
 
   if (!userId) {
@@ -30,7 +31,7 @@ export const createProject = async (req: Request, res: Response) => {
 
     const projectId = uuidv4();
     const projectData = await prisma.project.create({
-      data: { projectId, userId, name, description },
+      data: { projectId, userId, name, description, logoUrl },
     });
 
     res
@@ -121,7 +122,7 @@ export const getProjects = async (req: Request, res: Response) => {
 
 // Endpoint to create a new response
 export const postResponse = async (req: Request, res: Response) => {
-  const {name, email, projectId, type, content, star } = req.body;
+  const { name, email, projectId, type, content, star } = req.body;
 
   try {
     const checkProject = await prisma.project.findUnique({
@@ -133,7 +134,7 @@ export const postResponse = async (req: Request, res: Response) => {
       return res.status(403).json({ error: "Invalid project id" });
     }
     const responseData = await prisma.response.create({
-      data: {name, email, projectId, type, content, star },
+      data: { name, email, projectId, type, content, star },
     });
 
     res
@@ -171,5 +172,24 @@ export const getResponse = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error fetching response:", error);
     res.status(500).json({ error: "Failed to fetch response" });
+  }
+};
+
+export const s3Router = async (req: Request, res: Response) => {
+  try {
+    let { content_type } = req.body;
+    const key = uuidv4();
+    const data = await createPresignedPost({ key, contentType: content_type });
+
+    return res.send({
+      status: "success",
+      data,
+    });
+  } catch (err: any) {
+    console.error(err);
+    return res.status(500).send({
+      status: "error",
+      message: err.message,
+    });
   }
 };
