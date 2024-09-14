@@ -12,6 +12,7 @@ import {
   updateProjects,
   getProject,
   s3Router,
+  getSingleResponse,
 } from "./operations/operations";
 
 dotenv.config(); // Load environment variables
@@ -44,6 +45,8 @@ app.get("/v1/projects", verifyUserWithToken, getProjects);
 
 app.post("/v1/responses", postResponse);
 app.get("/v1/responses", verifyUserWithToken, getResponse);
+
+app.get("/v1/sureefy", getSingleResponse)
 
 app.post('/v1/s3/signed_url', s3Router)
 

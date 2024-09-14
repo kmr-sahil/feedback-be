@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid";
 import createPresignedPost from "../utils/s3";
+import { error } from "console";
 
 dotenv.config();
 
@@ -174,6 +175,32 @@ export const getResponse = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch response" });
   }
 };
+
+export const getSingleResponse = async (req: Request, res: Response) => {
+  try {
+    const responseId = req.query.responseId;
+    console.log(responseId)
+
+    if(!responseId){
+      return res.status(400).json({ error: "Valid Response ID is required" });
+    }
+
+    const response = await prisma.response.findUnique({
+      where: {
+        responseId: Number(responseId),
+      }
+    })
+
+    if(!response){
+      return res.status(404).json({error: "Not found"})
+    }
+
+    return res.status(200).json({response})
+  } catch (error) {
+    console.error("Error fetching response:", error);
+    res.status(500).json({ error: "Failed to fetch response" });
+  }
+}
 
 export const s3Router = async (req: Request, res: Response) => {
   try {

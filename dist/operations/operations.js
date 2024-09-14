@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.s3Router = exports.getResponse = exports.postResponse = exports.getProjects = exports.updateProjects = exports.getProject = exports.createProject = void 0;
+exports.s3Router = exports.getSingleResponse = exports.getResponse = exports.postResponse = exports.getProjects = exports.updateProjects = exports.getProject = exports.createProject = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 const uuid_1 = require("uuid");
@@ -181,6 +181,29 @@ const getResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.getResponse = getResponse;
+const getSingleResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const responseId = req.query.responseId;
+        console.log(responseId);
+        if (!responseId) {
+            return res.status(400).json({ error: "Valid Response ID is required" });
+        }
+        const response = yield prisma.response.findUnique({
+            where: {
+                responseId: Number(responseId),
+            }
+        });
+        if (!response) {
+            return res.status(404).json({ error: "Not found" });
+        }
+        return res.status(200).json({ response });
+    }
+    catch (error) {
+        console.error("Error fetching response:", error);
+        res.status(500).json({ error: "Failed to fetch response" });
+    }
+});
+exports.getSingleResponse = getSingleResponse;
 const s3Router = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let { content_type } = req.body;
