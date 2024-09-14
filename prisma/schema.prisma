@@ -1,0 +1,45 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  userId    String    @id @unique
+  name      String
+  email     String    @unique
+  password  String
+  createdAt DateTime  @default(now()) // Add createdAt timestamp
+  projects  Project[]
+}
+
+model Project {
+  projectId   String     @id @unique
+  userId      String
+  name        String
+  description String?
+  logoUrl     String?    @default("") // Set default to an empty string
+  adjustForm  Json       @default("{\"isEmailReq\":true, \"isNameInputReq\":false, \"isNameReq\":false}") // Default JSON value
+  responses   Response[]
+  createdAt   DateTime   @default(now()) // Add createdAt timestamp
+  user        User       @relation(fields: [userId], references: [userId])
+
+  @@index([userId])
+}
+
+model Response {
+  responseId Int      @id @default(autoincrement())
+  projectId  String
+  type       String
+  content    String
+  star       Int
+  name       String? // Add optional name field
+  email      String? // Add optional email field
+  project    Project  @relation(fields: [projectId], references: [projectId])
+  createdAt  DateTime @default(now()) // Add createdAt timestamp
+
+  @@index([projectId])
+}
