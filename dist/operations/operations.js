@@ -28,6 +28,7 @@ const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 const uuid_1 = require("uuid");
 const s3_1 = __importDefault(require("../utils/s3"));
+const getStats_1 = __importDefault(require("../utils/getStats"));
 dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 const SECRET_KEY = process.env.SECRET_KEY;
@@ -158,26 +159,46 @@ const postResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.postResponse = postResponse;
 // Endpoint to get responses for a project
 const getResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const projectIdParam = req.query.projectId;
-    //console.log(projectIdParam);
     try {
+        const projectIdParam = req.query.projectId;
+        const skip = Number(req.query.skip) || 0; // Default skip is 0
+        const take = Number(req.query.take) || 15; // Default take is 15
+        const filter = req.query.filter || "all"; // Default filter is 'all'
+        const getStats = req.query.getStats === 'true';
+        console.log(projectIdParam, " --- ", skip, " --- ", take, " -- ", filter, " -- ", getStats);
+        // Validate projectId
         if (!projectIdParam || typeof projectIdParam !== "string") {
             return res.status(400).json({ error: "Valid Project ID is required" });
         }
-        const projectId = projectIdParam;
-        if (!projectId) {
-            return res.status(400).json({ error: "Project ID is required" });
+        if (getStats) {
+            const { totalResponses, suggestionCount, issueCount, likedCount } = yield (0, getStats_1.default)(projectIdParam);
+            console.log("Stats: ", totalResponses, suggestionCount, issueCount, likedCount);
         }
+        // Check if skip and take are valid numbers
+        if (isNaN(skip) || skip < 0) {
+            return res.status(400).json({ error: "Invalid skip parameter" });
+        }
+        if (isNaN(take) || take <= 0) {
+            return res.status(400).json({ error: "Invalid take parameter" });
+        }
+        // Construct the filter criteria
+        const queryConditions = {
+            projectId: projectIdParam,
+        };
+        if (filter !== "all") {
+            queryConditions.type = filter;
+        }
+        // Fetch responses from the database
         const responses = yield prisma.response.findMany({
-            where: {
-                projectId: projectId,
-            },
+            skip,
+            take,
+            where: queryConditions,
         });
-        res.status(200).json({ responses });
+        return res.status(200).json({ responses });
     }
     catch (error) {
         console.error("Error fetching response:", error);
-        res.status(500).json({ error: "Failed to fetch response" });
+        return res.status(500).json({ error: "Failed to fetch response" });
     }
 });
 exports.getResponse = getResponse;
@@ -191,7 +212,7 @@ const getSingleResponse = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const response = yield prisma.response.findUnique({
             where: {
                 responseId: Number(responseId),
-            }
+            },
         });
         if (!response) {
             return res.status(404).json({ error: "Not found" });

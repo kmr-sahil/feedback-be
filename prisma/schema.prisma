@@ -31,7 +31,7 @@ model Project {
 }
 
 model Response {
-  responseId Int      @id @default(autoincrement())
+  responseId Int      @id @unique @default(autoincrement())
   projectId  String
   type       String
   content    String

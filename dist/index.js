@@ -29,7 +29,7 @@ app.get("/v1/project", operations_1.getProject);
 app.put("/v1/project", middleware_1.verifyUserWithToken, operations_1.updateProjects);
 app.get("/v1/projects", middleware_1.verifyUserWithToken, operations_1.getProjects);
 app.post("/v1/responses", operations_1.postResponse);
-app.get("/v1/responses", middleware_1.verifyUserWithToken, operations_1.getResponse);
+app.get("/v1/responses", operations_1.getResponse);
 app.get("/v1/sureefy", operations_1.getSingleResponse);
 app.post('/v1/s3/signed_url', operations_1.s3Router);
 app.listen(port, () => {

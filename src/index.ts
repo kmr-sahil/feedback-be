@@ -44,7 +44,7 @@ app.put("/v1/project", verifyUserWithToken, updateProjects);
 app.get("/v1/projects", verifyUserWithToken, getProjects);
 
 app.post("/v1/responses", postResponse);
-app.get("/v1/responses", verifyUserWithToken, getResponse);
+app.get("/v1/responses", getResponse);
 
 app.get("/v1/sureefy", getSingleResponse)
 
