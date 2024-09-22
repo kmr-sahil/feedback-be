@@ -6,20 +6,20 @@ dotenv.config();
 
 const prisma = new PrismaClient();
 
-export async function otpCheck(email: string, otp: number): Promise<{ token: string } | boolean> {
+export async function otpCheck(email: string, otp: number) {
   try {
     const user = await prisma.user.findUnique({
       where: { email },
     });
 
     if (!user || user.otp !== otp) {
-      return false; // Return false if user not found or OTP does not match
+      return null; // Return false if user not found or OTP does not match
     }
 
     const token = jwt.sign({ email }, process.env.SECRET_KEY as string, { expiresIn: "30d" });
     return { token };
   } catch (error) {
     console.error("Error during OTP verification:", error);
-    return false;
+    return null;
   }
 }

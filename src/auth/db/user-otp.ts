@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const generateOTP = (): string => {
+const generateOTP = (): number => {
   return otpGenerator.generate(6, {
     lowerCaseAlphabets: false,
     upperCaseAlphabets: false,
@@ -23,7 +23,7 @@ const generateOTP = (): string => {
   });
 };
 
-export const otpSenderMail = async (email: string): Promise<string> => {
+export const otpSenderMail = async (email: string) => {
   const otp = generateOTP();
 
   const mailOptions = {
