@@ -15,16 +15,19 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const generateOTP = (): number => {
-  return otpGenerator.generate(6, {
+const generateOTP = (): string => {
+  const otp = otpGenerator.generate(6,{
     lowerCaseAlphabets: false,
     upperCaseAlphabets: false,
     specialChars: false,
   });
+  console.log("Generated OTP:", otp); // Logging the generated OTP
+  return otp;
 };
 
 export const otpSenderMail = async (email: string) => {
   const otp = generateOTP();
+  console.log("Sending OTP to:", email); // Logging the email recipient
 
   const mailOptions = {
     from: process.env.SMTP_MAIL,
@@ -34,10 +37,12 @@ export const otpSenderMail = async (email: string) => {
   };
 
   try {
+    console.log("Attempting to send email..."); // Log before sending the email
     await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully"); // Log success
     return otp;
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error("Error sending email:", error); // Log any error encountered during sending
     throw new Error("Error sending OTP via email");
   }
 };
