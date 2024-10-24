@@ -21,7 +21,7 @@ export const signup = async (req: Request, res: Response) => {
     const otp = await otpSenderMail(email); // Send OTP via email
 
     await prisma.user.create({
-      data: { userId, name, email, password: hashedPassword, otp }, // Store the OTP
+      data: { userId, name, email, password: hashedPassword, otp: Number(otp) }, // Store the OTP
     });
 
     console.log(`User created with email: ${email}, OTP sent`);
@@ -53,7 +53,7 @@ export const signin = async (req: Request, res: Response) => {
 
     await prisma.user.update({
       where: { email },
-      data: { otp }, // Update OTP in the database
+      data: { otp: Number(otp) }, // Update OTP in the database
     });
 
     console.log(`Signin successful for email: ${email}, OTP sent`);
@@ -80,7 +80,7 @@ export const forgetPassword = async (req: Request, res: Response) => {
 
     await prisma.user.update({
       where: { email },
-      data: { otp },
+      data: { otp: Number(otp) },
     });
 
     console.log(`OTP sent to email: ${email}`);
@@ -103,7 +103,9 @@ export const resetPassword = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (user.otp !== otp) {
+    console.log(user.otp , " -- ", otp)
+
+    if (user.otp != otp) {
       console.log("Invalid OTP during password reset");
       return res.status(400).json({ message: "Invalid OTP" });
     }
@@ -112,7 +114,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 
     await prisma.user.update({
       where: { email },
-      data: { password: hashedPassword, otp },
+      data: { password: hashedPassword, otp: Number(otp) },
     });
 
     console.log(`Password updated for email: ${email}`);

@@ -6,16 +6,16 @@ import dotenv from "dotenv";
 dotenv.config({ path: path.join(__dirname, "../.env") });
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT), // Ensure port is a number
-  secure: process.env.SMTP_PORT === "465", // Compare as string
+  host: "smtpout.secureserver.net", // Hardcoded host
+  port: 587, // Ensure port is correct
+  secure: false, // Port 587 uses TLS
   auth: {
-    user: process.env.SMTP_MAIL,
-    pass: process.env.SMTP_PASSWORD,
+    user: "hq@getjobs.today", // Hardcoded email
+    pass: "MegaKnight&300", // Hardcoded password
   },
 });
 
-const generateOTP = (): string => {
+const generateOTP = (): number => {
   const otp = otpGenerator.generate(6,{
     lowerCaseAlphabets: false,
     upperCaseAlphabets: false,
@@ -38,6 +38,9 @@ export const otpSenderMail = async (email: string) => {
 
   try {
     console.log("Attempting to send email..."); // Log before sending the email
+    console.log("SMTP Host:", process.env.SMTP_HOST);
+console.log("SMTP Port:", process.env.SMTP_PORT);
+
     await transporter.sendMail(mailOptions);
     console.log("Email sent successfully"); // Log success
     return otp;

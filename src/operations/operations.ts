@@ -16,6 +16,8 @@ export const createProject = async (req: Request, res: Response) => {
   const { logoUrl, name, description } = req.body;
   const userId = req.userId; // Assuming you're setting this in your auth middleware
 
+  console.log( userId)
+
   if (!userId) {
     return res.status(403).json({ error: "User not authenticated" });
   }
@@ -26,6 +28,8 @@ export const createProject = async (req: Request, res: Response) => {
         userId: userId,
       },
     });
+
+
 
     if (!checkUser) {
       return res.status(403).json({ error: "Invalid user id" });

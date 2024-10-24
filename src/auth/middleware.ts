@@ -10,7 +10,7 @@ export const verifyUserWithToken = (
 ) => {
   const token = req.cookies.token;
   //console.log("All cookies:", req.cookies);
-  //console.log(token);
+  console.log(token);
   if (!token) {
     return res.status(401).json({ error: "Unauthorized" });
   }
@@ -18,6 +18,7 @@ export const verifyUserWithToken = (
   try {
     const decoded = jwt.verify(token, SECRET_KEY) as { userId: string };
     req.userId = decoded.userId;
+    console.log(decoded.userId, " -- ")
     next();
   } catch (error) {
     res.status(401).json({ error: "Invalid token" });
