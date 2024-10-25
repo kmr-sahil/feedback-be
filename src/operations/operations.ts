@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid";
 import createPresignedPost from "../utils/s3";
-import { error } from "console";
 import getResponseStats from "../utils/getStats";
 
 dotenv.config();
@@ -13,7 +12,7 @@ const SECRET_KEY = process.env.SECRET_KEY as string;
 
 // Endpoint to create a new project
 export const createProject = async (req: Request, res: Response) => {
-  const { logoUrl, name, description } = req.body;
+  const { logoUrl, name, description, website } = req.body;
   const userId = req.userId; // Assuming you're setting this in your auth middleware
 
   console.log( userId)
@@ -37,7 +36,7 @@ export const createProject = async (req: Request, res: Response) => {
 
     const projectId = uuidv4();
     const projectData = await prisma.project.create({
-      data: { projectId, userId, name, description, logoUrl },
+      data: { projectId, userId, name, description, logoUrl, website },
     });
 
     res

@@ -18,15 +18,20 @@ model User {
 }
 
 model Project {
-  projectId   String     @id @unique
-  userId      String
-  name        String
-  description String?
-  logoUrl     String?    @default("") // Set default to an empty string
-  adjustForm  Json       @default("{\"isEmailReq\":true, \"isNameInputReq\":false, \"isNameReq\":false}") // Default JSON value
-  responses   Response[]
-  createdAt   DateTime   @default(now()) // Add createdAt timestamp
-  user        User       @relation(fields: [userId], references: [userId])
+  projectId    String     @id @unique
+  userId       String
+  name         String
+  website      String     @unique
+  description  String?
+  logoUrl      String?    @default("") // Set default to an empty string
+  adjustForm   Json       @default("{\"isEmailReq\":true, \"isNameInputReq\":false, \"isNameReq\":false}") // Default JSON value
+  responses    Response[]
+  totalReviews Int?       @default(0)
+  avgRating    Int? // Made nullable
+  country      String? // Made nullable
+  category     String?
+  createdAt    DateTime   @default(now()) // Add createdAt timestamp
+  user         User       @relation(fields: [userId], references: [userId])
 
   @@index([userId])
 }

@@ -14,6 +14,7 @@ import {
   s3Router,
   getSingleResponse,
 } from "./operations/operations";
+import { getCompanies, getCompanyReview } from "./operations/publicops";
 
 dotenv.config(); 
 
@@ -52,6 +53,9 @@ app.get("/v1/responses", getResponse);
 app.get("/v1/sureefy", getSingleResponse)
 
 app.post('/v1/s3/signed_url', s3Router)
+
+app.get("/v1/companies", getCompanies)
+app.get("/v1/company/review", getCompanyReview)
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
