@@ -27,7 +27,7 @@ model Project {
   adjustForm   Json       @default("{\"isEmailReq\":true, \"isNameInputReq\":false, \"isNameReq\":false}") // Default JSON value
   responses    Response[]
   totalReviews Int?       @default(0)
-  avgRating    Int? // Made nullable
+  avgRating    Float?     @default(0.0)// Made nullable
   country      String? // Made nullable
   category     String?
   createdAt    DateTime   @default(now()) // Add createdAt timestamp

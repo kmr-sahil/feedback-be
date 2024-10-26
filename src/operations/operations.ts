@@ -130,26 +130,50 @@ export const postResponse = async (req: Request, res: Response) => {
   const { name, email, projectId, type, content, star } = req.body;
 
   try {
+    // Check if the project exists
     const checkProject = await prisma.project.findUnique({
-      where: {
-        projectId: projectId,
-      },
+      where: { projectId: projectId },
+      select: { totalReviews: true, avgRating: true }, // Retrieve totalReviews and avgRating
     });
+
     if (!checkProject) {
       return res.status(403).json({ error: "Invalid project id" });
     }
+
+    // Create the new response
     const responseData = await prisma.response.create({
       data: { name, email, projectId, type, content, star },
     });
 
-    res
-      .status(201)
-      .json({ message: "Response created successfully", responseData });
+    // Calculate updated totalReviews and avgRating
+    const newTotalReviews = (checkProject.totalReviews || 0) + 1;
+    const currentTotalRating = (checkProject.avgRating || 0) * (checkProject.totalReviews || 0);
+    const newAvgRatingRaw = (currentTotalRating + star) / newTotalReviews;
+
+    // Round to nearest 0.5
+    const newAvgRating = Math.round(newAvgRatingRaw * 2) / 2;
+
+    // Force it to be either 0.5 or a whole number by checking for trailing ".0"
+    const formattedAvgRating = parseFloat(newAvgRating.toFixed(1));
+
+    // Update project with new totalReviews and avgRating
+    await prisma.project.update({
+      where: { projectId: projectId },
+      data: {
+        totalReviews: newTotalReviews,
+        avgRating: formattedAvgRating,
+      },
+    });
+
+    // Respond with success
+    res.status(201).json({ message: "Response created successfully", responseData });
   } catch (error) {
     console.error("Error creating response:", error);
     res.status(500).json({ error: "Failed to create response" });
   }
 };
+
+
 
 // Endpoint to get responses for a project
 export const getResponse = async (req: Request, res: Response) => {
