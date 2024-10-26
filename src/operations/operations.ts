@@ -12,7 +12,7 @@ const SECRET_KEY = process.env.SECRET_KEY as string;
 
 // Endpoint to create a new project
 export const createProject = async (req: Request, res: Response) => {
-  const { logoUrl, name, description, website } = req.body;
+  const { logoUrl, name, description, website, category, country } = req.body;
   const userId = req.userId; // Assuming you're setting this in your auth middleware
 
   console.log( userId)
@@ -36,7 +36,7 @@ export const createProject = async (req: Request, res: Response) => {
 
     const projectId = uuidv4();
     const projectData = await prisma.project.create({
-      data: { projectId, userId, name, description, logoUrl, website },
+      data: { projectId, userId, name, description, logoUrl, website, category, country },
     });
 
     res
