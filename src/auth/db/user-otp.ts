@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const generateOTP = (): number => {
+const generateOTP = (): any => {
   const otp = otpGenerator.generate(6,{
     lowerCaseAlphabets: false,
     upperCaseAlphabets: false,
