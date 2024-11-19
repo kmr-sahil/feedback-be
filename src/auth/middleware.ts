@@ -12,7 +12,7 @@ export const verifyUserWithToken = (
   //console.log("All cookies:", req.cookies);
   console.log(token);
   if (!token) {
-    return res.status(401).json({ error: "Unauthorized" });
+    return res.status(401).json({ error: "Unauthorized." });
   }
 
   try {
