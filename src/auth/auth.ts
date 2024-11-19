@@ -17,7 +17,7 @@ export const signup = async (req: Request, res: Response) => {
   try {
     const userId = uuidv4();
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     const otp = await otpSenderMail(email); // Send OTP via email
 
     await prisma.user.create({
@@ -103,7 +103,7 @@ export const resetPassword = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    console.log(user.otp , " -- ", otp)
+    console.log(user.otp, " -- ", otp);
 
     if (user.otp != otp) {
       console.log("Invalid OTP during password reset");
@@ -135,10 +135,15 @@ export const checkOtp = async (req: Request, res: Response) => {
   }
 
   try {
+    const isProduction = process.env.NODE_ENV == "production";
     const verified = await otpCheck(email, otp);
     if (verified) {
       console.log(`OTP verified for email: ${email}`);
-      res.cookie("token", verified.token, { httpOnly: true });
+      res.cookie("token", verified.token, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+      });
       res.status(200).json({ message: "User authorized", email });
     } else {
       console.log("Invalid OTP during OTP check");
