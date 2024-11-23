@@ -22,17 +22,16 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 app.use(express.json());
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://trustbuddy.vercel.app",
-];
 
 app.use(
   cors({
-    credentials: true,
-    origin: allowedOrigins,
+    origin: process.env.CLIENT_URL || '*', // Replace with the specific client URL if known
+    credentials: true, 
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow all required methods
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'], // Explicitly list allowed headers
   })
 );
+
 
 app.use(cookieParser());
 
