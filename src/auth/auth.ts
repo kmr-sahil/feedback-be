@@ -5,12 +5,14 @@ import dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid";
 import { otpSenderMail } from "./db/user-otp";
 import { otpCheck } from "./db/otpcheck";
+import express from "express";
 
 dotenv.config();
 
 const prisma = new PrismaClient();
+const router = express.Router();
 
-export const signup = async (req: Request, res: Response) => {
+router.post("/signup", async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
   console.log(`Signup attempt for email: ${email}`);
 
@@ -30,9 +32,9 @@ export const signup = async (req: Request, res: Response) => {
     console.error("User creation failed", error);
     res.status(400).json({ error: "User creation failed" });
   }
-};
+});
 
-export const signin = async (req: Request, res: Response) => {
+router.post("/signin", async (req: Request, res: Response) => {
   const { email, password } = req.body;
   console.log(`Signin attempt for email: ${email}`);
 
@@ -62,9 +64,9 @@ export const signin = async (req: Request, res: Response) => {
     console.error("Signin failed", error);
     res.status(400).json({ error: "Signin failed" });
   }
-};
+});
 
-export const forgetPassword = async (req: Request, res: Response) => {
+router.post("/forgotpass", async (req: Request, res: Response) => {
   const { email } = req.body;
   console.log(`Forget password attempt for email: ${email}`);
 
@@ -89,9 +91,9 @@ export const forgetPassword = async (req: Request, res: Response) => {
     console.error("Error during forget password process:", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
-};
+});
 
-export const resetPassword = async (req: Request, res: Response) => {
+router.post("/resetpass", async (req: Request, res: Response) => {
   const { email, otp, newPassword } = req.body;
   console.log(`Password reset attempt for email: ${email}`);
 
@@ -123,9 +125,9 @@ export const resetPassword = async (req: Request, res: Response) => {
     console.error("Error during password reset process:", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
-};
+});
 
-export const checkOtp = async (req: Request, res: Response) => {
+router.post("/check", async (req: Request, res: Response) => {
   const { email, otp } = req.body;
   console.log(`OTP check for email: ${email}`);
 
@@ -153,4 +155,6 @@ export const checkOtp = async (req: Request, res: Response) => {
     console.error("Error during OTP check process:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-};
+});
+
+export default router;
