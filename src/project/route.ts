@@ -127,4 +127,46 @@ router.get("/user", verifyUserWithToken, async (req: Request, res: Response) => 
   }
 });
 
+router.put("/", verifyUserWithToken, async (req: Request, res: Response) => {
+  try {
+    const { projectId, name, description, category, country, logoUrl } = req.body; // Extract only editable fields
+    const userId = req.userId;
+
+    if (!userId) {
+      return res.status(403).json({ error: "User not authenticated" });
+    }
+
+    // Ensure the project exists
+    const existingProject = await prisma.project.findUnique({
+      where: {
+        projectId: projectId,
+      },
+    });
+
+    if (!existingProject) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Prevent updates to non-editable fields
+    const updatedProject = await prisma.project.update({
+      where: {
+        projectId: projectId,
+      },
+      data: {
+        name,
+        description,
+        category,
+        country,
+        logoUrl
+      },
+    });
+
+    res.status(200).json({ project: updatedProject });
+  } catch (error) {
+    console.error("Error updating project:", error);
+    res.status(500).json({ error: "Failed to update project" });
+  }
+});
+
+
 export default router;
