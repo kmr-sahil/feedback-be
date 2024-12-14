@@ -10,26 +10,10 @@ dotenv.config();
 const prisma = new PrismaClient();
 const router = express.Router();
 
-// Get user's name based on userId
-router.get("/:userId", async (req: Request, res: Response) => {
-  const { userId } = req.params; // Extract userId from URL parameter
-
-  try {
-    const user = await prisma.user.findUnique({
-      where: { userId },
-      select: { name: true }, // Only select the name field
-    });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    return res.json({ name: user.name });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error" });
-  }
-});
+router.get("/giveId", verifyUserWithToken, async (req: Request, res: Response) => {
+  const userId = req.userId;
+  return res.json({ userId: userId });
+})
 
 // Get all responses submitted by the user with pagination and ordering by latest submission
 router.get("/reviews/:userId", async (req: Request, res: Response) => {
@@ -168,6 +152,27 @@ router.put("/password", verifyUserWithToken, async (req: Request, res: Response)
     return res.json({ message: "Password updated successfully" });
   } catch (error) {
     console.error("Error updating password:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Get user's name based on userId
+router.get("/:userId", async (req: Request, res: Response) => {
+  const { userId } = req.params; // Extract userId from URL parameter
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { userId },
+      select: { name: true }, // Only select the name field
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json({ name: user.name });
+  } catch (error) {
+    console.error(error);
     return res.status(500).json({ message: "Server error" });
   }
 });
