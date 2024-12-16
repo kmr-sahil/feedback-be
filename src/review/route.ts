@@ -79,6 +79,72 @@ router.post("/", verifyUserWithToken, async (req: Request, res: Response) => {
   }
 });
 
+router.post("/widget", async (req: Request, res: Response) => {
+  const { projectId, type, content, star, userId } = req.body;
+
+  // Ensure userId is a valid string
+  if (!userId) {
+    return res.status(403).json({ error: "User not authenticated" });
+  }
+
+  try {
+    // Check if the project exists
+    const checkProject = await prisma.project.findUnique({
+      where: { projectId: projectId },
+      select: { totalReviews: true, avgRating: true }, // Retrieve totalReviews and avgRating
+    });
+
+    if (!checkProject) {
+      return res.status(403).json({ error: "Invalid project id" });
+    }
+
+    // Get the IP address from the request headers or another method
+    const ip = req.ip; // Or you can extract it from req.connection.remoteAddress, depending on the server configuration
+
+    // Create the new response using the userId from middleware
+    const responseData = await prisma.response.create({
+      data: {
+        userId, // Ensure this is a string and not undefined
+        projectId,
+        type,
+        content,
+        star,
+        ip, // Add the IP address from the backend
+        doe: new Date(), // Set date of experience (when the response was created)
+      },
+    });
+
+    // Calculate updated totalReviews and avgRating
+    const newTotalReviews = (checkProject.totalReviews || 0) + 1;
+    const currentTotalRating =
+      (checkProject.avgRating || 0) * (checkProject.totalReviews || 0);
+    const newAvgRatingRaw = (currentTotalRating + star) / newTotalReviews;
+
+    // Round to nearest 0.5
+    const newAvgRating = Math.round(newAvgRatingRaw * 2) / 2;
+
+    // Force it to be either 0.5 or a whole number by checking for trailing ".0"
+    const formattedAvgRating = parseFloat(newAvgRating.toFixed(1));
+
+    // Update project with new totalReviews and avgRating
+    await prisma.project.update({
+      where: { projectId: projectId },
+      data: {
+        totalReviews: newTotalReviews,
+        avgRating: formattedAvgRating,
+      },
+    });
+
+    // Respond with success
+    res
+      .status(201)
+      .json({ message: "Response created successfully", responseData });
+  } catch (error) {
+    console.error("Error creating response:", error);
+    res.status(500).json({ error: "Failed to create response" });
+  }
+})
+
 // Endpoint to get responses for a project
 router.get("/", async (req: Request, res: Response) => {
   try {

@@ -7,6 +7,7 @@ import reviewRoute from './review/route'
 import helper from './helper/route'
 import companyRoute from './company/route'
 import userRoute from './user/route'
+import tempUserRoute from './tempUser/route'
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.use('/project', projectRoute);
 router.use('/responses', reviewRoute);
 router.use('/company', companyRoute);
 router.use('/user', userRoute)
+router.use('/tempUser', tempUserRoute)
 router.use('/helper', helper);
 
 export default router;

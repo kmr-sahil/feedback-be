@@ -8,12 +8,13 @@ generator client {
 }
 
 model User {
-  userId    String    @id @unique
-  name      String
-  email     String    @unique
-  password  String
-  otp       Int
-  createdAt DateTime  @default(now()) // Add createdAt timestamp
+  userId     String   @id @unique
+  name       String
+  email      String   @unique
+  password   String?
+  otp        Int
+  isVerified Boolean?
+  createdAt  DateTime @default(now()) // Add createdAt timestamp
 
   responses Response[] // Add a relation to Response
 
@@ -21,37 +22,37 @@ model User {
 }
 
 model Project {
-  projectId    String     @id @unique
+  projectId    String   @id @unique
   userId       String
-  name         String 
-  website      String     @unique
+  name         String
+  website      String   @unique
   description  String?
-  logoUrl      String?    @default("") // Set default to an empty string
-  adjustForm   Json       @default("{\"isEmailReq\":true, \"isNameReq\":false, \"allowVerifiedUserOnly\":true}") // Default JSON value
-  totalReviews Int?       @default(0)
-  avgRating    Float?     @default(0.0) // Made nullable
+  logoUrl      String?  @default("") // Set default to an empty string
+  adjustForm   Json     @default("{\"isEmailReq\":true, \"isNameReq\":false, \"allowVerifiedUserOnly\":true}") // Default JSON value
+  totalReviews Int?     @default(0)
+  avgRating    Float?   @default(0.0) // Made nullable
   country      String? // Made nullable
   category     String?
-  createdAt    DateTime   @default(now()) // Add createdAt timestamp
+  createdAt    DateTime @default(now()) // Add createdAt timestamp
 
-  user         User     @relation(fields: [userId], references: [userId]) // Define relation to User
-  responses    Response[] // Add a relation to Response
+  user      User       @relation(fields: [userId], references: [userId]) // Define relation to User
+  responses Response[] // Add a relation to Response
 }
 
 model Response {
   responseId Int      @id @default(autoincrement())
   projectId  String
-  userId     String   // Foreign key to User
+  userId     String // Foreign key to User
   type       String
   content    String
   star       Int
-  ip         String?  // IP address of the submitter
-  location   String?  // Location of the submitter
+  ip         String? // IP address of the submitter
+  location   String? // Location of the submitter
   doe        DateTime // Date of experience (when the response was submitted)
   createdAt  DateTime @default(now()) // Add createdAt timestamp
 
-  project    Project  @relation(fields: [projectId], references: [projectId]) // Define relation to Project
-  user       User     @relation(fields: [userId], references: [userId]) // Define relation to User
+  project Project @relation(fields: [projectId], references: [projectId]) // Define relation to Project
+  user    User    @relation(fields: [userId], references: [userId]) // Define relation to User
 
   @@index([projectId])
   @@index([userId]) // Added index for optimized querying by userId

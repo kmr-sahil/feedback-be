@@ -128,6 +128,11 @@ router.put("/password", verifyUserWithToken, async (req: Request, res: Response)
       return res.status(404).json({ message: "User not found" });
     }
 
+    if (!user.password) {
+      console.log("Password is not set for this user");
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
     // Check if the current password matches
     const isPasswordCorrect = await bcrypt.compare(curr, user.password); // Compare using bcrypt
     if (!isPasswordCorrect) {

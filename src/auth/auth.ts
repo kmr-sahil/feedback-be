@@ -45,6 +45,11 @@ router.post("/signin", async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
+    if (!user.password) {
+      console.log("Password is not set for this user");
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       console.log("Invalid password during signin");
