@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
 import express from "express";
+import { verifyUserWithToken } from "../auth/middleware";
+import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
 
@@ -15,12 +17,25 @@ router.get("/", async (req: Request, res: Response) => {
 
     const response = await prisma.project.findMany({
       where: {
-        name: { contains: searchTerm as string, mode: "insensitive" },
-        category: category ? { equals: category as string } : undefined,
-        country: location
-          ? { contains: location as string, mode: "insensitive" }
-          : undefined,
-        avgRating: rating ? { gte: parseFloat(rating as string) } : undefined,
+        AND: [
+          {
+            OR: [
+              {
+                name: { contains: searchTerm as string, mode: "insensitive" },
+              },
+              {
+                website: { contains: searchTerm as string, mode: "insensitive" },
+              },
+            ],
+          },
+          category ? { category: { equals: category as string } } : {},
+          location
+            ? { country: { contains: location as string, mode: "insensitive" } }
+            : {},
+          rating
+            ? { avgRating: { gte: parseFloat(rating as string) } }
+            : {},
+        ],
       },
       skip: parseInt(offset as string) || 0,
       take: parseInt(limit as string) || 10,
@@ -119,6 +134,45 @@ router.get('/details', async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error fetching company details:", error);
     res.status(500).json({ error: "Failed to fetch company details" });
+  }
+});
+
+router.post('/create-unclaimed-profile', verifyUserWithToken, async (req :Request, res: Response) => {
+  const { website } = req.body;
+  
+  // Check if the website is provided
+  if (!website) {
+    return res.status(400).json({ message: "Website is required" });
+  }
+
+  try {
+    // Check if project already exists
+    const existingProject = await prisma.project.findUnique({
+      where: { website },
+    });
+
+    if (existingProject) {
+      return res.status(400).json({ message: "Project already exists for this website" });
+    }
+
+    // Create a new unclaimed profile (Project)
+    const projectId = uuidv4();
+    const newProject = await prisma.project.create({
+      data: {
+        website,
+        projectId,
+        avgRating: 0.0,
+        totalReviews: 0,
+      },
+    });
+
+    return res.status(201).json({
+      message: 'Unclaimed profile created successfully',
+      project: newProject,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Something went wrong' });
   }
 });
 

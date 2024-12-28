@@ -1,7 +1,6 @@
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -22,7 +21,7 @@ model User {
 
 model Project {
   projectId    String     @id @unique
-  userId       String?    @default("")
+  userId       String?    
   name         String?
   description  String?
   createdAt    DateTime   @default(now())
