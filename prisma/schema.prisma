@@ -1,6 +1,7 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -8,52 +9,48 @@ generator client {
 }
 
 model User {
-  userId     String   @id @unique
+  userId     String     @id @unique
   name       String
-  email      String   @unique
+  email      String     @unique
   password   String?
+  createdAt  DateTime   @default(now())
   otp        Int
   isVerified Boolean?
-  createdAt  DateTime @default(now()) // Add createdAt timestamp
-
-  responses Response[] // Add a relation to Response
-
-  Project Project[]
+  Project    Project[]
+  responses  Response[]
 }
 
 model Project {
-  projectId    String   @id @unique
-  userId       String
-  name         String
-  website      String   @unique
+  projectId    String     @id @unique
+  userId       String?    @default("")
+  name         String?
   description  String?
-  logoUrl      String?  @default("") // Set default to an empty string
-  adjustForm   Json     @default("{\"isEmailReq\":true, \"isNameReq\":false, \"allowVerifiedUserOnly\":true}") // Default JSON value
-  totalReviews Int?     @default(0)
-  avgRating    Float?   @default(0.0) // Made nullable
-  country      String? // Made nullable
+  createdAt    DateTime   @default(now())
+  adjustForm   Json       @default("{\"isNameReq\": false, \"isEmailReq\": true, \"allowVerifiedUserOnly\": true}")
+  logoUrl      String?    @default("")
+  avgRating    Float?     @default(0.0)
   category     String?
-  createdAt    DateTime @default(now()) // Add createdAt timestamp
-
-  user      User       @relation(fields: [userId], references: [userId]) // Define relation to User
-  responses Response[] // Add a relation to Response
+  country      String?
+  totalReviews Int?       @default(0)
+  website      String     @unique
+  user         User?       @relation(fields: [userId], references: [userId])
+  responses    Response[]
 }
 
 model Response {
   responseId Int      @id @default(autoincrement())
-  projectId  String
-  userId     String // Foreign key to User
   type       String
   content    String
   star       Int
-  ip         String? // IP address of the submitter
-  location   String? // Location of the submitter
-  doe        DateTime // Date of experience (when the response was submitted)
-  createdAt  DateTime @default(now()) // Add createdAt timestamp
-
-  project Project @relation(fields: [projectId], references: [projectId]) // Define relation to Project
-  user    User    @relation(fields: [userId], references: [userId]) // Define relation to User
+  projectId  String
+  createdAt  DateTime @default(now())
+  doe        DateTime
+  ip         String?
+  location   String?
+  userId     String
+  project    Project  @relation(fields: [projectId], references: [projectId])
+  user       User     @relation(fields: [userId], references: [userId])
 
   @@index([projectId])
-  @@index([userId]) // Added index for optimized querying by userId
+  @@index([userId])
 }
