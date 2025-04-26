@@ -19,17 +19,33 @@ export async function otpCheck(email: string, otp: number) {
     }
 
     if (user.otp != otp) {
-      console.log("OTP does not match for email:", email, "Provided OTP:", otp, "Stored OTP:", user.otp); // Log OTP mismatch
+      console.log(
+        "OTP does not match for email:",
+        email,
+        "Provided OTP:",
+        otp,
+        "Stored OTP:",
+        user.otp
+      ); // Log OTP mismatch
       return null;
     }
 
     console.log("OTP matched for email:", email, " -- ", user.userId); // Log when OTP matches
-    const token = jwt.sign( { userId: user.userId } , process.env.SECRET_KEY as string, { expiresIn: "30d" });
+    const token = jwt.sign(
+      { userId: user.userId },
+      process.env.SECRET_KEY as string,
+      { expiresIn: "30d" }
+    );
     console.log("JWT generated for email:", email); // Log token generation
 
-    return { token };
+    return { token, userId: user.userId, email: user.email, name: user.name }; // Return token and userId
   } catch (error) {
-    console.error("Error during OTP verification for email:", email, "Error:", error); // Log error during verification
+    console.error(
+      "Error during OTP verification for email:",
+      email,
+      "Error:",
+      error
+    ); // Log error during verification
     return null;
   }
 }

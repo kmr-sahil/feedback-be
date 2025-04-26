@@ -145,19 +145,43 @@ router.post("/check", async (req: Request, res: Response) => {
     const isProduction = process.env.NODE_ENV == "production";
     const verified = await otpCheck(email, otp);
     if (verified) {
-      console.log(`OTP verified for email: ${email}`);
+      console.log(`OTP verified for email: ${email} + ${verified}`);
       res.cookie("token", verified.token, {
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? "none" : "lax",
       });
-      res.status(200).json({ message: "User authorized", email });
+      res.status(200).json({ message: "User authorized", verified });
     } else {
       console.log("Invalid OTP during OTP check");
       res.status(401).json({ message: "Invalid OTP or email" });
     }
   } catch (error) {
     console.error("Error during OTP check process:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+// Add this to your existing router file
+
+router.post("/logout", async (req: Request, res: Response) => {
+  console.log("Logout attempt");
+
+  try {
+    const isProduction = process.env.NODE_ENV == "production";
+
+    // Clear the token cookie
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      path: "/",
+    });
+
+    console.log("User logged out successfully");
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("Logout failed", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
